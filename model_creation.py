@@ -49,6 +49,7 @@ def get_convolutional_model(input_shape, num_of_classes, num_of_conv_layers, num
     elif len(regularization_coeffs) < num_of_conv_layers + num_of_fc_layers:
         raise ValueError("There are not enough values in the regularization coefficients vector!")
 
+    # make regularizers
     if regularizer is None:
         regularizers = [None for _ in range(num_of_conv_layers + num_of_fc_layers)]
     else:
@@ -76,7 +77,7 @@ def get_convolutional_model(input_shape, num_of_classes, num_of_conv_layers, num
                          kernel_regularizer=regularizers[-1])(last_layer)
 
     # finish up
-    model = Model(input=input_layer, output=output_layer)
+    model = Model(inputs=input_layer, outputs=output_layer)
     model.compile(optimizer=optimizer, loss=loss_function, metrics=metrics)
 
     return model
