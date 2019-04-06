@@ -1,5 +1,6 @@
 import model_creation
 from constants import *
+from metrics import get_metrics
 from keras.datasets import cifar10
 from keras.utils import to_categorical
 
@@ -13,6 +14,6 @@ if __name__ == "__main__":
     model = model_creation.get_convolutional_model(INPUT_SHAPE, NUM_OF_CLASSES, NUM_OF_CONV_LAYERS, NUM_OF_CHANNELS,
                                                    KERNEL_SIZE, NUM_OF_FC_LAYERS, FC_SIZE, REGULARIZER,
                                                    REGULARIZATION_VECTOR, CONV_ACTIVATION, FC_ACTIVATION,
-                                                   LAST_ACTIVATION, OPTIMIZER, LOSS, METRICS)
+                                                   LAST_ACTIVATION, OPTIMIZER, LOSS, get_metrics())
     model.summary()
     model.fit(x_train, y_train, validation_split=0.1, epochs=15)
