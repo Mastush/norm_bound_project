@@ -2,7 +2,7 @@ import utils
 import numpy as np
 
 
-class Tracker:  # TODO: DEBUG!!!!!!!!
+class Tracker:
 
     def __init__(self, name):
         self._name = name
@@ -40,3 +40,11 @@ class Tracker:  # TODO: DEBUG!!!!!!!!
         self._update_generalization_errors(logs)
 
     def get_name(self): return self._name
+
+    def get_original_weights(self): return self._original_weights
+
+    def get_distance_from_original_weights_per_epoch(self): return self._distance_from_original_weights_per_epoch
+
+    def get_0_1_generalization_error_per_epoch(self): return self._0_1_generalization_error_per_epoch
+
+    def get_loss_generalization_error_per_epoch(self): return self._loss_generalization_error_per_epoch

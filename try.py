@@ -1,7 +1,12 @@
 import pickle
 import constants
+from visualization import Visualizer
+import numpy as np
 
-with open(constants.TRACKERS_DIRECTORY + 'tracking_baseline.pickle', 'rb') as pickle_in:
-    b = pickle.load(pickle_in)
+with open(constants.TRACKERS_DIRECTORY + 'tracking_baseline_14p4.pickle', 'rb') as pickle_in:
+    tracker = pickle.load(pickle_in)
 
-a = 5
+visualizer = Visualizer(tracker)
+jump = 1
+visualizer.plot_distances_from_initialization(jump=jump)
+visualizer.plot_generalization_error(jump=jump)

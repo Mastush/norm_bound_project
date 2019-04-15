@@ -7,7 +7,7 @@ from metrics import get_metrics
 from keras.datasets import cifar10
 from keras.utils import to_categorical
 from keras.preprocessing.image import ImageDataGenerator
-from callbacks import TrackerCallback
+from callbacks import TrackerCallback, get_non_tracker_callbacks
 from tracker import Tracker
 
 if __name__ == "__main__":
@@ -36,8 +36,12 @@ if __name__ == "__main__":
     )
     datagen.fit(x_train)
 
-    tracker = Tracker("tracking_baseline2")
+    # arrange callbacks
+    model_name = "baseline_model_with_reg_coeff_{}_15_april".format(REGULARIZATION_VECTOR)
+    tracker = Tracker(model_name)
+    callbacks = get_non_tracker_callbacks(model_name) + [TrackerCallback(tracker)]
+
+    # fit
     model.fit_generator(datagen.flow(x_train, y_train, batch_size=BATCH_SIZE),
                         steps_per_epoch=x_train.shape[0] // BATCH_SIZE, epochs=100,
-                        callbacks=[TrackerCallback(tracker)], validation_data=(x_test, y_test))
-    # model.fit(x_train, y_train, validation_data=(x_test, y_test), epochs=100, callbacks=[TrackerCallback(tracker)])
+                        callbacks=callbacks, validation_data=(x_test, y_test))

@@ -10,9 +10,9 @@ NUM_OF_CONV_LAYERS = 5
 NUM_OF_CHANNELS = 64
 KERNEL_SIZE = 3
 NUM_OF_FC_LAYERS = 2
-FC_SIZE = 64
-# REGULARIZER = SquaredFrobReg
-REGULARIZER = None
+FC_SIZE = 128
+REGULARIZER = SquaredFrobReg
+# REGULARIZER = None
 REGULARIZATION_VECTOR = 1
 CONV_ACTIVATION = 'relu'
 FC_ACTIVATION = 'relu'
@@ -20,8 +20,10 @@ LAST_ACTIVATION = 'softmax'
 LEARNING_RATE = 0.001
 OPTIMIZER = SGD(lr=LEARNING_RATE)
 LOSS = 'categorical_crossentropy'
-EPOCHS = 100
+EPOCHS = 150
 
 
 # ----- other constants ----- #
-TRACKERS_DIRECTORY = 'trackers/'
+
+TRACKERS_DIRECTORY = '/cs/usr/nadavsch/Desktop/norm_bound_project/trackers/'
+MODELS_DIRECTORY = '/cs/usr/nadavsch/Desktop/norm_bound_project/models/'
