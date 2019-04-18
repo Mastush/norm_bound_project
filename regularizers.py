@@ -1,6 +1,7 @@
 from keras import backend as K
 from abc import ABC, abstractmethod
 import utils
+import numpy as np
 
 # TODO: create regularization for each conv kernel separately?
 
@@ -15,11 +16,7 @@ class NormReg(ABC):
         pass
 
     def __call__(self, weight_matrix):
-        if self._original_weights is None and weight_matrix._uses_learning_phase:
-            self._original_weights = weight_matrix
-        elif not weight_matrix._uses_learning_phase:
-            return 0  # this is an ugly fix
-        diff_matrix = weight_matrix - self._original_weights
+        diff_matrix = weight_matrix - K.eval(weight_matrix)
         return self._coeff * self._norm(diff_matrix)
 
 

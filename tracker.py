@@ -11,6 +11,7 @@ class Tracker:
         self._distance_from_original_weights_per_epoch = []
         self._0_1_generalization_error_per_epoch = []
         self._loss_generalization_error_per_epoch = []
+        self._0_1_loss_per_epoch = []
 
     def update_original_layer_weights(self, layer_list):
         self._original_weights = []
@@ -34,6 +35,9 @@ class Tracker:
         self._0_1_generalization_error_per_epoch.append(abs(logs['categorical_accuracy'] -
                                                             logs['val_categorical_accuracy']))
         self._loss_generalization_error_per_epoch.append(abs(logs['loss'] - logs['val_loss']))
+
+    def _update_0_1_loss(self, logs):
+        self._0_1_loss_per_epoch.append(logs['categorical_accuracy'])
 
     def update_tracker(self, model, logs):
         self._update_distance_from_original_weights(model.layers)

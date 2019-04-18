@@ -8,3 +8,7 @@ def squared_frobenius_norm(weight_matrix):
 
 def keras_squared_frobenius_norm(weight_matrix):
     return K.sum(K.square(weight_matrix))
+
+
+def clip_filename(filename):
+    return filename[:filename.rfind('.')]

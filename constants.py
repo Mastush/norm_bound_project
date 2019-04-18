@@ -1,5 +1,6 @@
 from keras.optimizers import SGD
-from regularizers import SquaredFrobReg, FrobReg
+from regularizers import SquaredFrobReg
+
 
 # ----- network constants ----- #
 
@@ -13,7 +14,7 @@ NUM_OF_FC_LAYERS = 2
 FC_SIZE = 128
 REGULARIZER = SquaredFrobReg
 # REGULARIZER = None
-REGULARIZATION_VECTOR = 1
+REGULARIZATION_COEFF = 1
 CONV_ACTIVATION = 'relu'
 FC_ACTIVATION = 'relu'
 LAST_ACTIVATION = 'softmax'

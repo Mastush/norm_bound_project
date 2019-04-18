@@ -15,8 +15,7 @@ def get_convolutional_model(input_shape, num_of_classes, num_of_conv_layers, num
     :param kernel_size: (int or list of ints) represents the kernel size in each convolutional layer
     :param num_of_fc_layers: (int) the wanted number of fully-connected layers. Should be >= 1
     :param fc_size: (int or list of ints) represents the number of neurons in each fully connected layer
-    :param regularizer: (regularizer) a function that takes in a weight matrix and returns a loss contribution tensor.
-                         This function will operate as a regularizer
+    :param regularizer: (regularizer) An instantiatable regularizer class
     :param regularization_coeffs: (number or list of numbers) represents the amount of penalty that will arise from
                                    regularization in each layer
     :param conv_activation: (activation function) the activation function to be activated on the outputs of the
