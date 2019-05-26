@@ -1,6 +1,6 @@
 from keras.callbacks import Callback, ModelCheckpoint
-import pickle
 import constants
+import time
 
 
 class TrackerCallback(Callback):
@@ -13,11 +13,13 @@ class TrackerCallback(Callback):
         self._tracker.update_original_layer_weights(self.model.layers)
 
     def on_epoch_end(self, epoch, logs={}):
+        start_time = time.time()
         self._tracker.update_tracker(self.model, logs)
+        print("Tracker callback took {:.2f} seconds.".format(time.time() - start_time))
 
     def on_train_end(self, logs={}):
-        with open(constants.TRACKERS_DIRECTORY + "{}.pickle".format(self._tracker.get_name()), 'wb') as pickle_out:
-            pickle.dump(self._tracker, pickle_out, protocol=pickle.HIGHEST_PROTOCOL)
+        self._tracker.update_last_layer_weights(self.model.layers)
+        self._tracker.save_tracker()
 
 
 def get_non_tracker_callbacks(model_name=""):

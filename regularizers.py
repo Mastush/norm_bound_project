@@ -1,7 +1,6 @@
 from keras import backend as K
 from abc import ABC, abstractmethod
 import utils
-import numpy as np
 
 # TODO: create regularization for each conv kernel separately?
 

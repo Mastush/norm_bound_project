@@ -4,7 +4,8 @@ from keras.models import Model
 
 def get_convolutional_model(input_shape, num_of_classes, num_of_conv_layers, num_of_channels, kernel_size,
                             num_of_fc_layers, fc_size, regularizer, regularization_coeffs, conv_activation,
-                            fc_activation, last_activation, optimizer, loss_function, metrics, use_max_pooling=False):
+                            fc_activation, last_activation, optimizer, loss_function, metrics, use_max_pooling=False,
+                            padding='same'):
     """
     Creates an compiles a convolutional neural network with the given specifications.
     :param input_shape: (tuple) input shape
@@ -28,24 +29,30 @@ def get_convolutional_model(input_shape, num_of_classes, num_of_conv_layers, num
     :param loss_function: (keras loss function) the wanted loss function fot training
     :param metrics: (list) a list of metrics for the model
     :param use_max_pooling: (boolean) a boolean variable that indicates whether or not max pooling is to be used
+    :param padding: (string or list of strings) the method of padding for the convolutional layers
     :return: A compiled model with the given specifications
     """
-    # TODO: add batch norm (refresh bn knowledge)?
-
     # make vectors out of single numbers if such are given
     if not (isinstance(num_of_channels, tuple) or isinstance(num_of_channels, list)):
         num_of_channels = [num_of_channels for _ in range(num_of_conv_layers)]
     if not (isinstance(kernel_size, tuple) or isinstance(kernel_size, list)):
         kernel_size = [kernel_size for _ in range(num_of_conv_layers)]
+    if not (isinstance(padding, tuple) or isinstance(padding, list)):
+        padding = [padding for _ in range(num_of_conv_layers)]
     if not (isinstance(fc_size, tuple) or isinstance(fc_size, list)):
         fc_size = [fc_size for _ in range(num_of_fc_layers - 1)]
+
+    total_num_of_layers = num_of_conv_layers + num_of_fc_layers
+    if simulate_fc_with_conv_layer:
+        total_num_of_layers += 1
+
     if not (isinstance(regularization_coeffs, tuple) or isinstance(regularization_coeffs, list)):
-        regularization_coeffs = [regularization_coeffs for _ in range(num_of_conv_layers + num_of_fc_layers)]
+        regularization_coeffs = [regularization_coeffs for _ in range(total_num_of_layers)]
 
     # check number of coeffs
-    if len(regularization_coeffs) > num_of_conv_layers + num_of_fc_layers:
+    if len(regularization_coeffs) > total_num_of_layers:
         raise ValueError("There are too many elements in the regularization coefficients vector!")
-    elif len(regularization_coeffs) < num_of_conv_layers + num_of_fc_layers:
+    elif len(regularization_coeffs) < total_num_of_layers:
         raise ValueError("There are not enough values in the regularization coefficients vector!")
 
     # make regularizers
@@ -60,7 +67,7 @@ def get_convolutional_model(input_shape, num_of_classes, num_of_conv_layers, num
 
     # conv layers
     for i in range(num_of_conv_layers):
-        last_layer = Conv2D(num_of_channels[i], kernel_size[i], padding='same', activation=conv_activation,
+        last_layer = Conv2D(num_of_channels[i], kernel_size[i], padding=padding[i], activation=conv_activation,
                             kernel_initializer='glorot_normal', kernel_regularizer=regularizers[i])(last_layer)
         if use_max_pooling:
             last_layer = MaxPool2D()(last_layer)
