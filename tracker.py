@@ -7,7 +7,7 @@ import numpy as np
 
 
 class Tracker:
-    def __init__(self, name, x_train, y_train, x_val, y_val, compute_training_error=False,
+    def __init__(self, name, x_train, y_train, x_val, y_val, are_generators=False, compute_training_error=False,
                  examples_for_training_error_approx=None, save=True):
         self._name = name
         self._original_weights = None
@@ -16,6 +16,7 @@ class Tracker:
         self._y_train = y_train
         self._x_val = x_val
         self._y_val = y_val
+        self._are_generators = are_generators
         self._compute_training_error = compute_training_error
         self._examples_for_training_error_approx = examples_for_training_error_approx
         self._save = save
@@ -51,24 +52,32 @@ class Tracker:
             distance_from_original_weights.append(utils.squared_frobenius_norm(diff_matrix))
         self._distance_from_original_weights_per_epoch.append(distance_from_original_weights)
 
-    def _update_errors(self, model, logs):
+    def _get_training_stats(self, model, logs):  # TODO: switch "generator mode" to another type of tracker
         if self._compute_training_error:
-            x_for_training_loss, y_for_training_loss = self._x_train, self._y_train
-            if self._examples_for_training_error_approx is not None:
-                pairs = list(zip(x_for_training_loss, y_for_training_loss))  # make pairs out of the two lists
-                pairs = random.sample(pairs, self._examples_for_training_error_approx)  # pick random pairs
-                x_for_training_loss, y_for_training_loss = zip(*pairs)
-                x_for_training_loss, y_for_training_loss = np.asarray(x_for_training_loss), \
-                                                           np.asarray(y_for_training_loss)
+            if self._are_generators:
+                training_loss, training_accuracy = model.evaluate(batch_size=constants.BATCH_SIZE, verbose=0,
+                                                                  steps=self._examples_for_training_error_approx)  # TODO: suspect for bugs
+            else:
+                x_for_training_loss, y_for_training_loss = self._x_train, self._y_train
+                if self._examples_for_training_error_approx is not None:
+                    pairs = list(zip(x_for_training_loss, y_for_training_loss))  # make pairs out of the two lists
+                    pairs = random.sample(pairs, self._examples_for_training_error_approx)  # pick random pairs
+                    x_for_training_loss, y_for_training_loss = zip(*pairs)
+                    x_for_training_loss, y_for_training_loss = np.asarray(x_for_training_loss), \
+                                                               np.asarray(y_for_training_loss)
 
-            training_loss, training_accuracy = model.evaluate(x=x_for_training_loss, y=y_for_training_loss,
-                                                              batch_size=constants.BATCH_SIZE, verbose=0)
+                training_loss, training_accuracy = model.evaluate(x=x_for_training_loss, y=y_for_training_loss,
+                                                                  batch_size=constants.BATCH_SIZE, verbose=1)
         else:
             training_accuracy = logs['categorical_accuracy']
             training_loss = logs['loss']
 
-        val_loss, val_accuracy = model.evaluate(x=self._x_val, y=self._y_val,
-                                                batch_size=constants.BATCH_SIZE, verbose=0)
+        return training_loss, training_accuracy
+
+    def _update_errors(self, model, logs):
+        training_loss, training_accuracy = self._get_training_stats(model, logs)
+
+        val_loss, val_accuracy = logs['val_loss'], logs['val_categorical_accuracy']
         self._val_accuracy_per_epoch.append(val_accuracy)
         self._val_loss_per_epoch.append(val_loss)
         self._training_accuracy_per_epoch.append(training_accuracy)

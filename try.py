@@ -4,6 +4,7 @@ import constants
 from visualization import Visualizer
 import utils
 import os
+import numpy as np
 
 # tracker_name = 'baseline_model_reg_None_coeff_0.0_18_april.pickle'
 # for tracker_name in os.listdir(constants.TRACKERS_DIRECTORY):
@@ -17,33 +18,11 @@ import os
 #     visualizer.plot_accuracy(jump=jump)
 
 
-from keras.preprocessing.image import ImageDataGenerator
-import time
-#
-for batch_size in [32, 64, 128, 256]:
-    start_time = time.time()
-    training_gen = ImageDataGenerator()
-    training_gen = training_gen.flow_from_directory('/mnt/local-hd/nadavsch/ImageNet2012/train',
-                                                    target_size=(224, 224), batch_size=batch_size)
-    print("Time for setting generator up: {}".format(time.time() - start_time))
+input_layer = keras.layers.Input((6, 6, 1))
+last_layer = keras.layers.Conv2D(1, (3, 3))(input_layer)
+last_layer = keras.layers.Flatten()(last_layer)
+output_layer = keras.layers.Dense(2)(last_layer)
 
-    start_time = time.time()
-    for i in range(10):
-        a = next(training_gen)
-    print("Average time for batch of size {}: {}".format(batch_size, (time.time() - start_time) / 10))
-
-
-print("------------------- Now mine ------------------")
-
-
-from data_generator import get_generator
-
-for batch_size in [32, 64, 128, 256]:
-    start_time = time.time()
-    nadav = get_generator('/mnt/local-hd/nadavsch/ImageNet2012/train', batch_size)
-    print("Time for setting generator up: {}".format(time.time() - start_time))
-
-    start_time = time.time()
-    for i in range(10):
-        a = next(nadav)
-    print("Average time for batch of size {}: {}".format(batch_size, (time.time() - start_time) / 10))
+model = keras.Model(inputs=input_layer, outputs=output_layer)
+model.compile(optimizer=constants.OPTIMIZER, loss=constants.LOSS)
+a = 5
