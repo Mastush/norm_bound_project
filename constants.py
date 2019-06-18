@@ -6,7 +6,7 @@ from regularizers import SquaredFrobReg
 
 CIFAR_INPUT_SHAPE = (32, 32, 3)
 IMAGENET_INPUT_SHAPE = (224, 224, 3)
-BATCH_SIZE = 128
+BATCH_SIZE = 256
 IMAGENET_EPOCH_SIZE = 1280000
 IMAGENET_VALIDATION_SIZE = 50000
 CIFAR_NUM_OF_CLASSES = 10
@@ -24,15 +24,22 @@ LAST_ACTIVATION = 'softmax'
 LEARNING_RATE = 0.001
 OPTIMIZER = SGD(lr=LEARNING_RATE, momentum=0.9, nesterov=False)
 LOSS = 'categorical_crossentropy'
-EPOCHS = 150
-EXAMPLES_FOR_APPROX = 5000
+EPOCHS = 50
+EXAMPLES_FOR_APPROX = 100000
 
 
 # ----- other constants ----- #
 
 RESULTS_DIR = '/cs/usr/nadavsch/Desktop/norm_bound_project/results/'
 TRACKERS_DIRECTORY = '/cs/usr/nadavsch/Desktop/norm_bound_project/trackers/'
-MODELS_DIRECTORY = '/cs/usr/nadavsch/Desktop/norm_bound_project/models/'
+MODELS_DIRECTORY = '/cs/labs/amitd/nadavsch/models/'
+# MODELS_DIRECTORY = '/cs/usr/nadavsch/Desktop/norm_bound_project/models/'
 
 IMAGENET_TRAIN_DIR = '/mnt/local-ssd/nadavsch/ImageNet/train_tfr_processed/'
 IMAGENET_VAL_DIR = '/mnt/local-ssd/nadavsch/ImageNet/val_tfr_processed/'
+# IMAGENET_TRAIN_DIR = '/mnt/local-hd/nadavsch/ImageNet2012/train_tfr_processed/'
+# IMAGENET_VAL_DIR = '/mnt/local-hd/nadavsch/ImageNet2012/val_tfr_processed/'
+# IMAGENET_TRAIN_DIR = '/cs/labs/amitd/nadavsch/ImageNet_preprocessed_TFR/train_tfr_processed'
+# IMAGENET_VAL_DIR = '/cs/labs/amitd/nadavsch/ImageNet_preprocessed_TFR/val_tfr_processed'
+# IMAGENET_TRAIN_DIR = '/cs/dataset/ILSVRC2012/ImageNet_preprocessed_TFR/train_tfr_processed'
+# IMAGENET_VAL_DIR = '/cs/dataset/ILSVRC2012/ImageNet_preprocessed_TFR/val_tfr_processed'

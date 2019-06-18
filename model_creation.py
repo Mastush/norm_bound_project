@@ -109,7 +109,7 @@ def get_convolutional_model(input_shape, num_of_classes, num_of_conv_layers, num
     return model
 
 
-def alexnet(x, y):
+def alexnet(x, y, metrics=[]):
     input_layer = Input(tensor=x)
 
     last_layer = Conv2D(filters=64, kernel_size=(11,11), strides=(4,4), padding='valid',
@@ -136,7 +136,8 @@ def alexnet(x, y):
     output_layer = Dense(1000, kernel_initializer='glorot_normal', activation='softmax')(last_layer)
 
     model = Model(inputs=input_layer, outputs=output_layer)
-    model.compile(optimizer=constants.OPTIMIZER, loss=categorical_crossentropy, metrics=['accuracy'], target_tensors=[y])
+    model.compile(optimizer=constants.OPTIMIZER, loss=categorical_crossentropy,
+                  metrics=metrics, target_tensors=[y])
 
     return model
 

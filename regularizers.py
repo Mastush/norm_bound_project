@@ -1,14 +1,12 @@
+from keras.regularizers import Regularizer
 from keras import backend as K
 from abc import ABC, abstractmethod
 import utils
 
-# TODO: create regularization for each conv kernel separately?
 
-
-class NormReg(ABC):
+class NormReg(ABC, Regularizer):  # TODO: enable serialization!!!
     def __init__(self, coeff):
         self._coeff = coeff
-        self._original_weights = None
 
     @abstractmethod
     def _norm(self, weight_matrix):

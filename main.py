@@ -8,12 +8,10 @@ from keras.datasets import cifar10
 from keras.utils import to_categorical
 from keras.regularizers import l2
 from keras.preprocessing.image import ImageDataGenerator
-import tensorflow as tf
 from callbacks import TrackerCallback, get_non_tracker_callbacks
-from tracker import Tracker
+from tracker import Tracker, TrackerForTFRecords
 import time
 from data_generator import ImageNetTFRecordDataset
-
 
 
 def cifar_experiments():
@@ -62,8 +60,8 @@ def cifar_experiments():
 
         # get model
         model = model_creation.get_convolutional_model(CIFAR_INPUT_SHAPE, CIFAR_NUM_OF_CLASSES, NUM_OF_CONV_LAYERS,
-                                                       NUM_OF_CHANNELS, KERNEL_SIZE, 1, NUM_OF_FC_LAYERS, 200, regularizer,
-                                                       coeff, CONV_ACTIVATION, FC_ACTIVATION,
+                                                       NUM_OF_CHANNELS, KERNEL_SIZE, 1, NUM_OF_FC_LAYERS, 200,
+                                                       regularizer, coeff, CONV_ACTIVATION, FC_ACTIVATION,
                                                        LAST_ACTIVATION, OPTIMIZER, LOSS, get_metrics(),
                                                        padding='valid')
         model.summary()
@@ -82,7 +80,7 @@ def cifar_experiments():
         #                     callbacks=callbacks, validation_data=(x_val, y_val), verbose=1)
 
         model.fit_generator(datagen.flow(x_train, y_train, batch_size=32),
-                            steps_per_epoch=5, epochs=EPOCHS,
+                            steps_per_epoch=1, epochs=1,
                             callbacks=callbacks, validation_data=(x_val, y_val), verbose=1)
 
         # indicate end of experiment
@@ -92,7 +90,7 @@ def cifar_experiments():
               "Elapsed time: {:.2f} minutes.".format(i + 1, model_name, experiment_time, total_time))
 
 
-def imagenet_experiments():
+def imagenet_experiments(verbose):
     # get generators
     train_dataset = ImageNetTFRecordDataset(IMAGENET_TRAIN_DIR, BATCH_SIZE)
     val_dataset = ImageNetTFRecordDataset(IMAGENET_VAL_DIR, BATCH_SIZE)
@@ -133,38 +131,31 @@ def imagenet_experiments():
         x_val, y_val = val_dataset.create_dataset()
 
         # get model
-        model = model_creation.get_convolutional_model(IMAGENET_INPUT_SHAPE, IMAGENET_NUM_OF_CLASSES, 6,
-                                                       [128, 128, 128, 128, 128, 128],
-                                                       [11, 5, 5, 5, 5, 5], [4, 2, 1, 1, 2, 1], 2,
-                                                       400, regularizer, coeff, CONV_ACTIVATION, FC_ACTIVATION,
-                                                       LAST_ACTIVATION, OPTIMIZER, LOSS, get_metrics(),
-                                                       padding='valid', batch_norm=False, tensors=[x, y])
-
-        # from keras.applications.resnet50 import ResNet50
-        #
-        # model = ResNet50(weights=None, input_tensor=x)
-        # model.compile(optimizer=OPTIMIZER, loss=LOSS, metrics=get_metrics(), target_tensors=[y])
-
-        # model = model_creation.alexnet(x, y)
+        # model = model_creation.get_convolutional_model(IMAGENET_INPUT_SHAPE, IMAGENET_NUM_OF_CLASSES, 6,
+        #                                                [128, 128, 128, 128, 128, 128],
+        #                                                [11, 5, 5, 5, 5, 5], [4, 2, 1, 1, 2, 1], 2,
+        #                                                400, regularizer, coeff, CONV_ACTIVATION, FC_ACTIVATION,
+        #                                                LAST_ACTIVATION, OPTIMIZER, LOSS, get_metrics(),
+        #                                                padding='valid', batch_norm=False, tensors=[x, y])
+        model = model_creation.alexnet(x, y, get_metrics())
+        # model = model_creation.get_convolutional_model(IMAGENET_INPUT_SHAPE, IMAGENET_NUM_OF_CLASSES, 0, 1, 3 ,1 ,2, 1,
+        #                                                None, 0, 'relu', 'relu', 'softmax', OPTIMIZER, LOSS, get_metrics(),
+        #                                                tensors=[x, y])
 
         model.summary()
 
         # arrange callbacks
-        model_name = "reg_{}_coeff_{}_25_may".format(regularizer_name, coeff)
+        model_name = "alexnet_{}_coeff_{}_16_June".format(regularizer_name, coeff)
         print("Model name is: {}".format(model_name))
-        tracker = Tracker(model_name, None, None, None, None, compute_training_error=False,
-                          examples_for_training_error_approx=None, save=True)
+        tracker = TrackerForTFRecords(model_name, True, EXAMPLES_FOR_APPROX, True, True)  # TODO: suspect for bugs?
+        # tracker = TrackerForTFRecords(model_name, True, 300, True, top_k_acc=True)  # TODO: suspect for bugs?
 
         callbacks = get_non_tracker_callbacks(model_name) + [TrackerCallback(tracker)]
 
         # fit
-        model.fit(epochs=EPOCHS, verbose=1, validation_data=(x_val, y_val),
-                  steps_per_epoch=IMAGENET_EPOCH_SIZE // BATCH_SIZE,
+        model.fit(epochs=EPOCHS, verbose=verbose, validation_data=(x_val, y_val),
+                  steps_per_epoch=IMAGENET_EPOCH_SIZE // BATCH_SIZE, callbacks=callbacks,
                   validation_steps=IMAGENET_VALIDATION_SIZE // BATCH_SIZE)
-
-        # model.fit_generator(train_gen, steps_per_epoch=IMAGENET_EPOCH_SIZE // BATCH_SIZE, epochs=EPOCHS,
-        #                     validation_data=val_gen, validation_steps=IMAGENET_VALIDATION_SIZE // BATCH_SIZE,
-        #                     workers=10, use_multiprocessing=True)
 
         # indicate end of experiment
         experiment_time = int(time.time() - last_time) / 60
@@ -174,6 +165,6 @@ def imagenet_experiments():
 
 
 if __name__ == '__main__':
-    cifar_experiments()
-    imagenet_experiments()
+    # cifar_experiments()
+    imagenet_experiments(1)
 

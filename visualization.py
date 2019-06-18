@@ -2,6 +2,8 @@ import numpy as np
 from matplotlib import pyplot as plt
 import os
 import utils
+import constants
+import pickle
 
 
 class Visualizer:
@@ -76,7 +78,7 @@ class Visualizer:
                                         "Generalization_Error.png")
 
     def plot_accuracy(self, jump=1):
-        accuracy = np.expand_dims(self._tracker.get_val_accuracy_per_epoch(), axis=0)  # TODO: change to a getter BEFORE next exp
+        accuracy = np.expand_dims(self._tracker.get_val_accuracy_per_epoch(), axis=0)
         accuracy = accuracy[:, ::jump]
         epoch_range = np.arange(self._num_of_epochs) + 1
         epoch_range = epoch_range[::jump]
@@ -84,3 +86,19 @@ class Visualizer:
         tags = ["Accuracy"]
 
         self._plot_information_by_epoch(accuracy, tags, epoch_range, "Accuracy", "Accuracy.png")
+
+
+def create_plots():
+    for tracker_name in os.listdir(constants.TRACKERS_DIRECTORY):
+        with open(constants.TRACKERS_DIRECTORY + tracker_name, 'rb') as pickle_in:
+            tracker = pickle.load(pickle_in)
+        visualizer = Visualizer(tracker, target_directory=constants.RESULTS_DIR + utils.clip_filename(tracker_name))
+        jump = 1
+        visualizer.plot_distances_from_initialization(jump=jump)
+        visualizer.plot_normalized_distances_from_initialization(jump=jump)
+        visualizer.plot_generalization_error(jump=jump)
+        visualizer.plot_accuracy(jump=jump)
+
+
+if __name__ == '__main__':
+    create_plots()

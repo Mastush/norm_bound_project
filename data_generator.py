@@ -33,7 +33,7 @@ class ImageNetTFRecordDataset:
         dataset = dataset.repeat()
 
         # Set the number of datapoints you want to load and shuffle
-        dataset = dataset.shuffle(self._batch_size * 10)
+        # dataset = dataset.shuffle(self._batch_size * 10)
 
         # Maps the parser on every filepath in the array. You can set the number of parallel loaders here
         dataset = dataset.map(self._parse_function, num_parallel_calls=8)
