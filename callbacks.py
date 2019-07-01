@@ -1,4 +1,4 @@
-from keras.callbacks import Callback, ModelCheckpoint
+from tensorflow.keras.callbacks import Callback, ModelCheckpoint
 import constants
 import time
 
@@ -26,5 +26,5 @@ def get_non_tracker_callbacks(model_name=""):
     filepath = constants.MODELS_DIRECTORY + model_name + "_{epoch:02d}_{val_categorical_accuracy:.2f}.hdf5"
     checkpoint = ModelCheckpoint(filepath, monitor='val_categorical_accuracy', verbose=0, save_best_only=False,
                                  save_weights_only=False, mode='auto', period=1)
-    return [checkpoint]  # TODO: figure out why checkpoint fails with custom reg.
-    # return []
+    # return [checkpoint]  # TODO: figure out why checkpoint fails with custom reg.
+    return []

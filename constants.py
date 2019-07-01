@@ -1,4 +1,5 @@
-from keras.optimizers import SGD
+import tensorflow
+from tensorflow.keras.optimizers import SGD
 from regularizers import SquaredFrobReg
 
 
@@ -16,8 +17,6 @@ NUM_OF_CHANNELS = 128
 KERNEL_SIZE = 5
 NUM_OF_FC_LAYERS = 2
 FC_SIZE = 256
-REGULARIZER = SquaredFrobReg
-REGULARIZATION_COEFF = 2
 CONV_ACTIVATION = 'relu'
 FC_ACTIVATION = 'relu'
 LAST_ACTIVATION = 'softmax'
@@ -30,16 +29,19 @@ EXAMPLES_FOR_APPROX = 100000
 
 # ----- other constants ----- #
 
-RESULTS_DIR = '/cs/usr/nadavsch/Desktop/norm_bound_project/results/'
-TRACKERS_DIRECTORY = '/cs/usr/nadavsch/Desktop/norm_bound_project/trackers/'
-MODELS_DIRECTORY = '/cs/labs/amitd/nadavsch/models/'
-# MODELS_DIRECTORY = '/cs/usr/nadavsch/Desktop/norm_bound_project/models/'
+RESULTS_DIR = '/cs/labs/amitd/nadavsch/norm_bound_project/results/'
+TRACKERS_DIRECTORY = '/cs/labs/amitd/nadavsch/norm_bound_project/trackers/'
+MODELS_DIRECTORY = '/cs/labs/amitd/nadavsch/norm_bound_project/models/'
 
-IMAGENET_TRAIN_DIR = '/mnt/local-ssd/nadavsch/ImageNet/train_tfr_processed/'
-IMAGENET_VAL_DIR = '/mnt/local-ssd/nadavsch/ImageNet/val_tfr_processed/'
-# IMAGENET_TRAIN_DIR = '/mnt/local-hd/nadavsch/ImageNet2012/train_tfr_processed/'
-# IMAGENET_VAL_DIR = '/mnt/local-hd/nadavsch/ImageNet2012/val_tfr_processed/'
-# IMAGENET_TRAIN_DIR = '/cs/labs/amitd/nadavsch/ImageNet_preprocessed_TFR/train_tfr_processed'
-# IMAGENET_VAL_DIR = '/cs/labs/amitd/nadavsch/ImageNet_preprocessed_TFR/val_tfr_processed'
-# IMAGENET_TRAIN_DIR = '/cs/dataset/ILSVRC2012/ImageNet_preprocessed_TFR/train_tfr_processed'
-# IMAGENET_VAL_DIR = '/cs/dataset/ILSVRC2012/ImageNet_preprocessed_TFR/val_tfr_processed'
+# IMAGENET_TRAIN_DIR = '/mnt/local-ssd/nadavsch/ImageNet/train_tfr_processed/'
+# IMAGENET_VAL_DIR = '/mnt/local-ssd/nadavsch/ImageNet/val_tfr_processed/'
+
+CLUSTER_LOCAL_IMAGENET_TRAIN_DIR = '/mnt/local/nadavsch/train_tfr_processed/'
+CLUSTER_LOCAL_IMAGENET_VAL_DIR = '/mnt/local/nadavsch/val_tfr_processed/'
+
+
+LOCAL_IMAGENET_TRAIN_DIR = '/mnt/local-ssd/nadavsch/ImageNet/train_tfr_processed/'
+LOCAL_IMAGENET_VAL_DIR = '/mnt/local-ssd/nadavsch/ImageNet/val_tfr_processed/'
+
+# LOCAL_IMAGENET_TRAIN_DIR = '/mnt/local-ssd/nadavsch/ImageNet/train_tfr_processed/'
+# LOCAL_IMAGENET_VAL_DIR = '/mnt/local-ssd/nadavsch/ImageNet/val_tfr_processed/'

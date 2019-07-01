@@ -1,17 +1,18 @@
 #!/cs/usr/bin/python3.5
 
-
+from tensorflow.keras.datasets import cifar10
 import model_creation
 from constants import *
 from metrics import get_metrics
-from keras.datasets import cifar10
-from keras.utils import to_categorical
-from keras.regularizers import l2
-from keras.preprocessing.image import ImageDataGenerator
+from tensorflow.keras.utils import to_categorical
+from tensorflow.keras.regularizers import l2
+from tensorflow.keras.preprocessing.image import ImageDataGenerator
 from callbacks import TrackerCallback, get_non_tracker_callbacks
 from tracker import Tracker, TrackerForTFRecords
 import time
+import datetime
 from data_generator import ImageNetTFRecordDataset
+
 
 
 def cifar_experiments():
@@ -90,81 +91,66 @@ def cifar_experiments():
               "Elapsed time: {:.2f} minutes.".format(i + 1, model_name, experiment_time, total_time))
 
 
-def imagenet_experiments(verbose):
-    # get generators
-    train_dataset = ImageNetTFRecordDataset(IMAGENET_TRAIN_DIR, BATCH_SIZE)
-    val_dataset = ImageNetTFRecordDataset(IMAGENET_VAL_DIR, BATCH_SIZE)
+def single_imagenet_experiment(regularizer, coeff, train_dir=CLUSTER_LOCAL_IMAGENET_TRAIN_DIR,
+                               val_dir=CLUSTER_LOCAL_IMAGENET_VAL_DIR, verbose=2):
+    print("Started experiment at {}".format(datetime.datetime.now()))
 
-    # train_gen = ImageDataGenerator(samplewise_center=False, samplewise_std_normalization=False)
-    # val_gen = ImageDataGenerator(samplewise_center=False, samplewise_std_normalization=False)
-    #
-    # train_gen = train_gen.flow_from_directory('/mnt/local-hd/nadavsch/ImageNet2012/train_processed',
-    #                                           target_size=(224, 224), batch_size=BATCH_SIZE)
-    # val_gen = val_gen.flow_from_directory('/mnt/local-hd/nadavsch/ImageNet2012/val_processed',
-    #                                       target_size=(224, 224), batch_size=BATCH_SIZE)
+    train_dataset = ImageNetTFRecordDataset(train_dir, BATCH_SIZE)
+    val_dataset = ImageNetTFRecordDataset(val_dir, BATCH_SIZE)
+    train_iter = train_dataset.create_dataset()
+    val_iter = val_dataset.create_dataset()
 
-    # Prepare experiments
-    iterations_without_reg = 1
-    iterations_with_distance_reg = 10
-    iterations_with_l2_reg = 10
-    initial_coeff = 0.0001
-    regularizers_list = [None for _ in range(iterations_without_reg)] + \
-                        [SquaredFrobReg for _ in range(iterations_with_distance_reg)] + \
-                        [l2 for _ in range(iterations_with_l2_reg)]
-    coeff_list = [0.0 for _ in range(iterations_without_reg)] + \
-                 [initial_coeff * 2**i for i in range(iterations_with_distance_reg)] + \
-                 [initial_coeff * 2**i for i in range(iterations_with_l2_reg)]
-    num_of_experiments = iterations_without_reg + iterations_with_distance_reg + iterations_with_l2_reg
-
-    # now prepare and perform each experiment
+    print("Finished creating datasets at {}".format(datetime.datetime.now()))
 
     start_time = time.time()
 
-    for i in range(num_of_experiments):
-        last_time = time.time()
-        regularizer = regularizers_list[i]
-        regularizer_name = "None" if regularizer is None else regularizer.__name__
-        coeff = coeff_list[i]
+    # get model
+    # model = model_creation.get_convolutional_model(IMAGENET_INPUT_SHAPE, IMAGENET_NUM_OF_CLASSES, 6,
+    #                                                [128, 128, 128, 128, 128, 128],
+    #                                                [11, 5, 5, 5, 5, 5], [4, 2, 1, 1, 2, 1], 2,
+    #                                                400, regularizer, coeff, CONV_ACTIVATION, FC_ACTIVATION,
+    #                                                LAST_ACTIVATION, OPTIMIZER, LOSS, get_metrics(),
+    #                                                padding='valid', batch_norm=False, tensors=tensors)
+    # model = model_creation.alexnet(tensors, metrics=get_metrics())
 
-        # get tensors
-        x, y = train_dataset.create_dataset()
-        x_val, y_val = val_dataset.create_dataset()
+    # model = model_creation.get_convolutional_model(IMAGENET_INPUT_SHAPE, IMAGENET_NUM_OF_CLASSES, 5, [16, 32, 64, 128, 256],
+    #                                                3, 2, 2, 400, None, 0, CONV_ACTIVATION, FC_ACTIVATION, LAST_ACTIVATION,
+    #                                                OPTIMIZER, LOSS, get_metrics())
+    # model = model_creation.get_convolutional_model(IMAGENET_INPUT_SHAPE, IMAGENET_NUM_OF_CLASSES, 6, [32, 64, 128, 256, 512, 1028],
+    #                                                [5, 3, 3, 3, 3, 3], [3, 2, 2, 2, 2, 2], 4, 1500, None, 0, CONV_ACTIVATION, FC_ACTIVATION, LAST_ACTIVATION,
+    #                                                OPTIMIZER, LOSS, get_metrics())
+    # model = model_creation.alexnet(None, get_metrics())
+    # model = model_creation.get_convolutional_model(IMAGENET_INPUT_SHAPE, IMAGENET_NUM_OF_CLASSES, 6, [32, 64, 128, 256, 512, 1028],
+    #                                                [5, 3, 3, 3, 3, 3], [3, 2, 2, 2, 2, 2], 3, 2000, None, 0, CONV_ACTIVATION, FC_ACTIVATION, LAST_ACTIVATION,
+    #                                                OPTIMIZER, LOSS, get_metrics())
+    # model = model_creation.get_convolutional_model(IMAGENET_INPUT_SHAPE, IMAGENET_NUM_OF_CLASSES, 5, [32, 64, 128, 256, 512],
+    #                                                [11, 3, 3, 3, 3], [5, 2, 2, 2, 2], 4, 2000, None, 0, CONV_ACTIVATION, FC_ACTIVATION, LAST_ACTIVATION,
+    #                                                OPTIMIZER, LOSS, get_metrics())
+    model = model_creation.alexnet(dropout=True, metrics=get_metrics())
+    model.summary()
 
-        # get model
-        # model = model_creation.get_convolutional_model(IMAGENET_INPUT_SHAPE, IMAGENET_NUM_OF_CLASSES, 6,
-        #                                                [128, 128, 128, 128, 128, 128],
-        #                                                [11, 5, 5, 5, 5, 5], [4, 2, 1, 1, 2, 1], 2,
-        #                                                400, regularizer, coeff, CONV_ACTIVATION, FC_ACTIVATION,
-        #                                                LAST_ACTIVATION, OPTIMIZER, LOSS, get_metrics(),
-        #                                                padding='valid', batch_norm=False, tensors=[x, y])
-        model = model_creation.alexnet(x, y, get_metrics())
-        # model = model_creation.get_convolutional_model(IMAGENET_INPUT_SHAPE, IMAGENET_NUM_OF_CLASSES, 0, 1, 3 ,1 ,2, 1,
-        #                                                None, 0, 'relu', 'relu', 'softmax', OPTIMIZER, LOSS, get_metrics(),
-        #                                                tensors=[x, y])
+    regularizer_name = "None" if regularizer is None else regularizer.__name__
+    model_name = "nadavnet_{}_coeff_{}_23_June".format(regularizer_name, coeff)
+    print("Model name is: {}".format(model_name))
+    tracker = TrackerForTFRecords(model_name, train_dataset.get_x(), train_dataset.get_y(), True, EXAMPLES_FOR_APPROX, True, True)
+    callbacks = get_non_tracker_callbacks(model_name) + [TrackerCallback(tracker)]
+    # callbacks = None
 
-        model.summary()
+    print("Finished preparing everything at {}. Ready to start fitting.".format(datetime.datetime.now()))
 
-        # arrange callbacks
-        model_name = "alexnet_{}_coeff_{}_16_June".format(regularizer_name, coeff)
-        print("Model name is: {}".format(model_name))
-        tracker = TrackerForTFRecords(model_name, True, EXAMPLES_FOR_APPROX, True, True)  # TODO: suspect for bugs?
-        # tracker = TrackerForTFRecords(model_name, True, 300, True, top_k_acc=True)  # TODO: suspect for bugs?
+    # fit
+    model.fit(x=train_iter, epochs=EPOCHS, verbose=verbose, validation_data=val_iter,
+              steps_per_epoch=IMAGENET_EPOCH_SIZE // BATCH_SIZE, callbacks=callbacks,
+              validation_steps=IMAGENET_VALIDATION_SIZE // BATCH_SIZE)
 
-        callbacks = get_non_tracker_callbacks(model_name) + [TrackerCallback(tracker)]
-
-        # fit
-        model.fit(epochs=EPOCHS, verbose=verbose, validation_data=(x_val, y_val),
-                  steps_per_epoch=IMAGENET_EPOCH_SIZE // BATCH_SIZE, callbacks=callbacks,
-                  validation_steps=IMAGENET_VALIDATION_SIZE // BATCH_SIZE)
-
-        # indicate end of experiment
-        experiment_time = int(time.time() - last_time) / 60
-        total_time = int(time.time() - start_time) / 60
-        print("Finished experiment number {} of model {}. \nThis Experiment took {:.2f} minutes. "
-              "Elapsed time: {:.2f} minutes.".format(i + 1, model_name, experiment_time, total_time))
+    print("Experiment of model {} finished. "
+          "This experiment took {:.2f} minutes.".format(model_name, int(time.time() - start_time) / 60))
 
 
 if __name__ == '__main__':
     # cifar_experiments()
-    imagenet_experiments(1)
+    reg = l2
+    coeff = 0.0004
+    # single_imagenet_experiment(reg, coeff, train_dir=LOCAL_IMAGENET_TRAIN_DIR, val_dir=LOCAL_IMAGENET_VAL_DIR, verbose=1)
+    single_imagenet_experiment(reg, coeff, train_dir=CLUSTER_LOCAL_IMAGENET_TRAIN_DIR, val_dir=CLUSTER_LOCAL_IMAGENET_VAL_DIR, verbose=2)
 

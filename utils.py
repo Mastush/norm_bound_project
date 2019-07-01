@@ -1,5 +1,5 @@
 import numpy as np
-import keras.backend as K
+import tensorflow.keras.backend as K
 
 
 def squared_frobenius_norm(weight_matrix):

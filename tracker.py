@@ -1,23 +1,22 @@
 import utils
 import pickle
 import constants
-from keras.preprocessing.image import ImageDataGenerator
+from tensorflow.keras.preprocessing.image import ImageDataGenerator
 import random
 import numpy as np
 
 
 class Tracker:
-    def __init__(self, name, x_train, y_train, x_val, y_val, compute_training_error=False,
+    def __init__(self, name, x_train, y_train, compute_training_error=False,
                  examples_for_training_error_approx=None, save=True, top_k_acc=False):
         self._name = name
         self._original_weights = None
         self._last_weights = None
         self._x_train = x_train
         self._y_train = y_train
-        self._x_val = x_val
-        self._y_val = y_val
         self._compute_training_error = compute_training_error
         self._examples_for_training_error_approx = examples_for_training_error_approx
+        self._examples_for_training_error_approx = 512
         self._save = save
         self._distance_from_original_weights_per_epoch = []
         self._singular_values_per_epoch = []
@@ -83,7 +82,7 @@ class Tracker:
         return training_loss, training_accuracy, training_top_k
 
     def _update_errors(self, model, logs):
-        training_loss, training_accuracy, training_top_k  = self._get_training_stats(model, logs)
+        training_loss, training_accuracy, training_top_k = self._get_training_stats(model, logs)
 
         val_loss, val_accuracy = logs['val_loss'], logs['val_categorical_accuracy']
         if self._top_k_acc:
@@ -136,27 +135,22 @@ class Tracker:
         if self._save:
             temp_x_train = self._x_train
             temp_y_train = self._y_train
-            temp_x_val = self._x_val
-            temp_y_val = self._y_val
 
             self._x_train = None  # no sense in saving these...
             self._y_train = None
-            self._x_val = None
-            self._y_val = None
+
             with open(constants.TRACKERS_DIRECTORY + "{}.pickle".format(self.get_name()), 'wb') as pickle_out:
                 pickle.dump(self, pickle_out, protocol=pickle.HIGHEST_PROTOCOL)
 
             self._x_train = temp_x_train
             self._y_train = temp_y_train
-            self._x_val = temp_x_val
-            self._y_val = temp_y_val
 
 
 class TrackerForTFRecords(Tracker):
-    def __init__(self, name, compute_training_error=False, examples_for_training_error_approx=None, save=True,
+    def __init__(self, name, x, y, compute_training_error=False, examples_for_training_error_approx=None, save=True,
                  top_k_acc=False):
         """Using this class assumes that the model knows where training data comes from"""
-        super().__init__(name, None, None, None, None, compute_training_error=compute_training_error,
+        super().__init__(name, x, y, compute_training_error=compute_training_error,
                          examples_for_training_error_approx=examples_for_training_error_approx, save=save,
                          top_k_acc=top_k_acc)
 
@@ -165,14 +159,15 @@ class TrackerForTFRecords(Tracker):
         if self._compute_training_error:
             if self._top_k_acc:
                 training_loss, training_accuracy, training_top_k = \
-                    model.evaluate(verbose=0,
+                    model.evaluate(x=self._x_train, y=self._y_train, verbose=0,
                                    steps=self._examples_for_training_error_approx // constants.BATCH_SIZE)
             else:
                 training_loss, training_accuracy = \
-                    model.evaluate(verbose=0,
-                                   steps=self._examples_for_training_error_approx //constants.BATCH_SIZE)
+                    model.evaluate(x=self._x_train, y=self._y_train, verbose=0,
+                                   steps=self._examples_for_training_error_approx // constants.BATCH_SIZE)
         else:
             if self._top_k_acc: training_top_k = logs['top_k_categorical_accuracy']
             training_accuracy = logs['categorical_accuracy']
             training_loss = logs['loss']
         return training_loss, training_accuracy, training_top_k
+
